@@ -1,0 +1,7 @@
+[package]
+name = "playlist_transit"
+version = "0.1.0"
+authors = ["Claire Moore <nrmoore@uci.edu>"]
+
+[dependencies]
+roxmltree = "0.4.0"

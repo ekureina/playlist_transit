@@ -1,0 +1,23 @@
+[[package]]
+name = "playlist_transit"
+version = "0.1.0"
+dependencies = [
+ "roxmltree 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "roxmltree"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "xmlparser 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "xmlparser"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum roxmltree 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "869a77456372218c6cd28ae457bedbc338af19866290e71d71965cc992e2654b"
+"checksum xmlparser 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "225256c1180a843c21c5c1953aa890b544f5188b8af5d0bad87a4a1bb942f9dc"
