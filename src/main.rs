@@ -3,7 +3,8 @@ extern crate roxmltree;
 use std::fmt;
 use std::env;
 use std::fs;
-use std::io::Read;
+use std::io;
+use std::io::{Read, Write};
 use std::process;
 
 struct Song {
@@ -20,7 +21,18 @@ impl fmt::Display for Song {
 
 fn main() {
     let args: Vec<_> = env::args().collect();
-    let songs: Vec<Song> = get_songs(&args[1]);
+    let argc = args.len();
+    let mut song_path: String = String::new();
+    if argc < 2 {
+        println!("Input the file to read from: ");
+        match io::stdin().read_line(&mut song_path) {
+            Ok(_) => (),
+            Err(x) => panic!("IO read Error: {}", x),
+        }
+    } else {
+        song_path = String::from(args[1].as_str());
+    }
+    let songs: Vec<Song> = get_songs(&song_path);
     for song in songs {
         println!("{}", song);
     }
@@ -51,8 +63,27 @@ fn get_songs(xml_path: &str) -> Vec<Song> {
     songs
 }
 
+fn get_xml_file(xml_path_start: &str) -> fs::File {
+    let mut xml_path = String::from(xml_path_start);
+    let mut file = fs::File::open(&xml_path);
+    while file.is_err() {
+        print!("Invalid File: {}Enter valid file to read from: ", xml_path);
+        match io::stdout().flush() {
+            Ok(_) => (),
+            Err(x) => panic!("IO flush Error: {}", x),
+        }
+        xml_path = String::new();
+        match io::stdin().read_line(&mut xml_path) {
+            Ok(_) => (),
+            Err(x) => panic!("IO read Error: {}", x),
+        }
+        file = fs::File::open(&xml_path);
+    }
+    file.unwrap()
+}
+
 fn get_xml_text(xml_path: &str) -> String {
-    let mut file = fs::File::open(&xml_path).unwrap();
+    let mut file = get_xml_file(xml_path);
     let mut text = String::new();
     file.read_to_string(&mut text).unwrap();
     text
