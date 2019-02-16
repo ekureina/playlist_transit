@@ -83,8 +83,12 @@ fn get_xml_file(xml_path_start: &str) -> fs::File {
 }
 
 fn get_xml_text(xml_path: &str) -> String {
-    let mut file = get_xml_file(xml_path);
     let mut text = String::new();
-    file.read_to_string(&mut text).unwrap();
+    if xml_path != "--stdin" {
+        let mut file = get_xml_file(xml_path);
+        file.read_to_string(&mut text).unwrap();
+    } else {
+        io::stdin().read_to_string(&mut text).unwrap();
+    }
     text
 }
