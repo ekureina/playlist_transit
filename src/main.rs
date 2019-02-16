@@ -5,7 +5,6 @@ use std::env;
 use std::fs;
 use std::io;
 use std::io::{Read, Write};
-use std::process;
 
 struct Song {
     title: String,
@@ -42,10 +41,7 @@ fn get_songs(xml_path: &str) -> Vec<Song> {
     let xml_text = get_xml_text(&xml_path);
     let playlists_xml = match roxmltree::Document::parse(&xml_text) {
         Ok(doc) => doc,
-        Err(e) => {
-            println!("Playlist Parse Error: {}.", e);
-            process::exit(1);
-        },
+        Err(e) => panic!("Playlist Parse Error: {}.", e),
     };
     let mut songs = Vec::new();
     for song in playlists_xml.descendants() {
