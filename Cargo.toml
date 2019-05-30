@@ -5,6 +5,12 @@ authors = ["Claire Moore <nrmoore@uci.edu>"]
 
 [dependencies]
 roxmltree = "0.4.0"
+nfd = {version = "0.0.4", optional = true}
 
 [profile.release]
 panic = "abort"
+
+[features]
+default = ["gui"]
+
+gui = ["nfd"]

@@ -1,4 +1,6 @@
 extern crate roxmltree;
+#[cfg(feature = "gui")]
+extern crate nfd;
 
 use std::fmt;
 use std::env;
