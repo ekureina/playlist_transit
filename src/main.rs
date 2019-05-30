@@ -7,6 +7,8 @@ use std::env;
 use std::fs;
 use std::io;
 use std::io::{Read, Write};
+#[cfg(feature = "gui")]
+use nfd::Response;
 
 struct Song {
     title: String,
@@ -24,11 +26,17 @@ fn main() {
     let args: Vec<_> = env::args().collect();
     let argc = args.len();
     let mut song_path: String = String::new();
-    if argc < 2 {
+    if argc < 2 && !cfg!(feature = "gui") {
         println!("Input the file to read from: ");
         match io::stdin().read_line(&mut song_path) {
             Ok(_) => (),
             Err(x) => panic!("IO read Error: {}", x),
+        }
+    } else if argc < 2 {
+        let dialog = nfd::open_file_dialog(Some("xspf"), None).unwrap_or_else(|e| {panic!(e);});
+        match dialog {
+            Response::Okay(path) => song_path = path,
+            default => println!("Bad file path!"),
         }
     } else {
         song_path = String::from(args[1].as_str());
