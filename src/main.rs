@@ -22,22 +22,35 @@ impl fmt::Display for Song {
     }
 }
 
+#[cfg(feature = "gui")]
+fn get_song_path() -> String {
+    loop {
+        let dialog = nfd::open_file_dialog(Some("xspf"), None).unwrap_or_else(|e| {panic!(e);});
+        match dialog {
+            Response::Okay(path) => return path,
+            _ => println!("Bad file path!"),
+        }
+    }
+}
+
+#[cfg(not(feature = "gui"))]
+fn get_song_path() -> String {
+    let mut song_path = String::new();
+    loop {
+        println!("Input the file to read from: ");
+        match io::stdin().read_line(&mut song_path) {
+            Ok(_) => return song_path,
+            Err(x) => panic!("IO read Error: {}", x),
+        }
+    }
+}
+
 fn main() {
     let args: Vec<_> = env::args().collect();
     let argc = args.len();
-    let mut song_path: String = String::new();
-    if argc < 2 && !cfg!(feature = "gui") {
-        println!("Input the file to read from: ");
-        match io::stdin().read_line(&mut song_path) {
-            Ok(_) => (),
-            Err(x) => panic!("IO read Error: {}", x),
-        }
-    } else if argc < 2 {
-        let dialog = nfd::open_file_dialog(Some("xspf"), None).unwrap_or_else(|e| {panic!(e);});
-        match dialog {
-            Response::Okay(path) => song_path = path,
-            default => println!("Bad file path!"),
-        }
+    let song_path;
+    if argc < 2 {
+        song_path = get_song_path();
     } else {
         song_path = String::from(args[1].as_str());
     }
