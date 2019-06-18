@@ -35,8 +35,9 @@ fn gui_path() {
     application.connect_activate(|app| {
         let window = gtk::ApplicationWindow::new(app);
         window.set_title("Playlist Transit");
-        window.set_default_size(200, 400);
+        let grid = gtk::Grid::new();
         let chooser_frame = gtk::Frame::new("Playlist File");
+        let display_frame = gtk::Frame::new("Playlist Text");
         let playlist_popup = gtk::FileChooserDialog::with_buttons(
             "Select Playlist File",
             Some(&window),
@@ -50,15 +51,21 @@ fn gui_path() {
 
         let chooser_button = gtk::FileChooserButton::new_with_dialog(
             &playlist_popup);
-        chooser_button.connect_file_set(|chooser_button| {if let Some(file) = chooser_button.get_filename() {
+        let display = gtk::TextView::new();
+        let display_clone = display.clone();
+        chooser_button.connect_file_set(move |chooser_button| {if let Some(file) = chooser_button.get_filename() {
             if let Ok(filename) = file.into_os_string().into_string() {
+                let text = display_clone.get_buffer().unwrap();
                 for song in get_songs(&filename) {
-                    println!("{}", song);
+                    text.insert(&mut text.get_end_iter(), &format!("{}\n", song));
                 }
             }
         }});
         chooser_frame.add(&chooser_button);
-        window.add(&chooser_frame);
+        grid.add(&chooser_frame);
+        display_frame.add(&display);
+        grid.attach_next_to(&display_frame, &chooser_frame, gtk::PositionType::Bottom, 1, 1);
+        window.add(&grid);
         window.show_all();
     });
 
