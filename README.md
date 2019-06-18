@@ -10,4 +10,5 @@ Playlist Transit is written in rust, and is meant to be compiled using cargo. Ru
 ## Call Syntax
 
 Playlist transit expects either the path to the xspf file to read from, the flag ```--stdin```, which directs the program to read the input from standard input.
-If neither of these options are provided, the program will ask for the file to read from on the command line (it will also detect if the file asked for is inaccessable, and ask for a new file instead).
+If neither of these options are provided, and the program is compiled without gui support, the program will ask for the file to read from on the command line (it will also detect if the file asked for is inaccessable, and ask for a new file instead).
+If the program is compiled with gui support (the default), it will still support the command line arguments mentioned above. However, if it does not recieve any arguments, it will open a GUI with a button to choose the playlist file to use, and will append to a textbox below said button.
