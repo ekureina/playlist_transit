@@ -1,14 +1,21 @@
 extern crate roxmltree;
 #[cfg(feature = "gui")]
-extern crate nfd;
+extern crate gtk;
+#[cfg(feature = "gui")]
+extern crate gio;
 
 use std::fmt;
 use std::env;
 use std::fs;
 use std::io;
 use std::io::{Read, Write};
+
 #[cfg(feature = "gui")]
-use nfd::Response;
+use gtk::prelude::*;
+#[cfg(feature = "gui")]
+use gio::prelude::*;
+#[cfg(feature = "gui")]
+use gtk::Application;
 
 struct Song {
     title: String,
@@ -23,13 +30,53 @@ impl fmt::Display for Song {
 }
 
 #[cfg(feature = "gui")]
-fn get_song_path() -> String {
-    loop {
-        let dialog = nfd::open_file_dialog(Some("xspf"), None).unwrap_or_else(|e| {panic!(e);});
-        match dialog {
-            Response::Okay(path) => return path,
-            _ => println!("Bad file path!"),
-        }
+fn gui_path() {
+    let application = Application::new("playlist.transit", Default::default()).expect("Application::new failed");
+    application.connect_activate(|app| {
+        let window = gtk::ApplicationWindow::new(app);
+        window.set_title("Playlist Transit");
+        window.set_default_size(200, 400);
+        let chooser_frame = gtk::Frame::new("Playlist File");
+        let playlist_popup = gtk::FileChooserDialog::with_buttons(
+            "Select Playlist File",
+            Some(&window),
+            gtk::FileChooserAction::Open,
+            &[("Open", gtk::ResponseType::Ok),
+            ("Cancel", gtk::ResponseType::Cancel)]);
+        let xspf_filter = gtk::FileFilter::new();
+        xspf_filter.set_name("XSPF Playlist file (.xspf)");
+        xspf_filter.add_mime_type("application/xspf+xml");
+        playlist_popup.add_filter(&xspf_filter);
+
+        let chooser_button = gtk::FileChooserButton::new_with_dialog(
+            &playlist_popup);
+        chooser_button.connect_file_set(|chooser_button| {if let Some(file) = chooser_button.get_filename() {
+            if let Ok(filename) = file.into_os_string().into_string() {
+                for song in get_songs(&filename) {
+                    println!("{}", song);
+                }
+            }
+        }});
+        chooser_frame.add(&chooser_button);
+        window.add(&chooser_frame);
+        window.show_all();
+    });
+
+    application.run(&[]);
+}
+
+#[cfg(not(feature = "gui"))]
+fn run_no_gui() {
+    for song in get_songs(&get_song_path()) {
+        println!("{}", song);
+    }
+}
+
+fn run_auto(args: &mut env::Args) {
+    let song_path = String::from(args.nth(1).unwrap().as_str());
+    let songs: Vec<Song> = get_songs(&song_path);
+    for song in songs {
+        println!("{}", song);
     }
 }
 
@@ -46,17 +93,14 @@ fn get_song_path() -> String {
 }
 
 fn main() {
-    let args: Vec<_> = env::args().collect();
-    let argc = args.len();
-    let song_path;
-    if argc < 2 {
-        song_path = get_song_path();
+    let mut args = env::args();
+    if args.len() < 2 {
+        #[cfg(not(feature = "gui"))]
+        run_no_gui();
+        #[cfg(feature = "gui")]
+        gui_path();
     } else {
-        song_path = String::from(args[1].as_str());
-    }
-    let songs: Vec<Song> = get_songs(&song_path);
-    for song in songs {
-        println!("{}", song);
+        run_auto(&mut args);
     }
 }
 
